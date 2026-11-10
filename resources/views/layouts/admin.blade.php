@@ -52,14 +52,15 @@
                     <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
                 </a>
 
-                <!-- 2. Properties (Phase 2) -->
-                <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">
-                    <svg class="w-5 h-5 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- 2. Properties (Active in Phase 2) -->
+                <a href="{{ route('admin.properties.index') }}"
+                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-colors {{ request()->routeIs('admin.properties.*') ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                     <span>Properties</span>
-                    <span class="ml-auto text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Phase 2</span>
-                </div>
+                    <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
+                </a>
 
                 <!-- 3. Enquiries (Phase 3) -->
                 <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">
@@ -200,3 +201,4 @@
 
 </body>
 </html>
+

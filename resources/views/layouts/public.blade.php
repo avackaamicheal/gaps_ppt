@@ -70,10 +70,10 @@
 
                 <!-- Desktop Nav Links -->
                 <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-                    <a href="{{ route('home') }}" class="text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">Home</a>
-                    <a href="#featured" class="hover:text-slate-900 transition-colors">Featured Listings</a>
-                    <a href="#about" class="hover:text-slate-900 transition-colors">About Agent</a>
-                    <a href="#contact" class="hover:text-slate-900 transition-colors">Contact</a>
+                    <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'text-emerald-600 font-semibold' : 'hover:text-slate-900' }} transition-colors">Home</a>
+                    <a href="{{ route('properties.index') }}" class="{{ request()->routeIs('properties.*') ? 'text-emerald-600 font-semibold' : 'hover:text-slate-900' }} transition-colors">Properties</a>
+                    <a href="{{ route('home') }}#about" class="hover:text-slate-900 transition-colors">About Agent</a>
+                    <a href="{{ route('home') }}#contact" class="hover:text-slate-900 transition-colors">Contact</a>
                 </nav>
 
                 <!-- Header Actions -->
@@ -101,9 +101,9 @@
         <!-- Mobile menu dropdown -->
         <div x-show="mobileMenuOpen" x-cloak class="md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-6 space-y-3">
             <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-base font-medium text-emerald-600 bg-emerald-50">Home</a>
-            <a href="#featured" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Featured Listings</a>
-            <a href="#about" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">About Agent</a>
-            <a href="#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Contact</a>
+            <a href="{{ route('properties.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Properties</a>
+            <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">About Agent</a>
+            <a href="{{ route('home') }}#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Contact</a>
             <div class="pt-2 border-t border-slate-100 flex flex-col gap-2">
                 <a href="https://wa.me/2348000000000?text=Hello,%20I%20am%20interested%20in%20your%20properties" target="_blank" rel="noopener noreferrer" class="w-full text-center py-2.5 px-4 rounded-lg bg-emerald-600 text-white font-semibold text-sm">
                     Chat on WhatsApp
@@ -191,3 +191,4 @@
 
 </body>
 </html>
+

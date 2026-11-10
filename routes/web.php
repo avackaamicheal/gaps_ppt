@@ -1,18 +1,24 @@
 <?php
 
-use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
+use App\Http\Controllers\Admin\PropertyDocumentController as AdminPropertyDocumentController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\PropertyController as PublicPropertyController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+// Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/properties', [PublicPropertyController::class, 'index'])->name('properties.index');
+Route::get('/properties/{slug}', [PublicPropertyController::class, 'show'])->name('properties.show');
+Route::get('/properties/{slug}/documents/{document}', [PublicPropertyController::class, 'downloadDocument'])->name('properties.documents.download');
 
 // Admin Guest Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
-        Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-        Route::post('/login', [AuthController::class, 'login']);
+        Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [AdminAuthController::class, 'login']);
     });
 
     // Admin Authenticated Routes
@@ -20,7 +26,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', function () {
             return redirect()->route('admin.dashboard');
         });
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+
+        // Property Management
+        Route::resource('properties', AdminPropertyController::class);
+        Route::patch('properties/{property}/status', [AdminPropertyController::class, 'updateStatus'])->name('properties.status');
+        Route::delete('properties/{property}/images/{image}', [AdminPropertyController::class, 'deleteImage'])->name('properties.images.destroy');
+        Route::post('properties/{property}/images/{image}/cover', [AdminPropertyController::class, 'setCoverImage'])->name('properties.images.cover');
+
+        // Property Documents Management
+        Route::get('properties/{property}/documents/{document}/download', [AdminPropertyDocumentController::class, 'download'])->name('properties.documents.download');
+        Route::delete('properties/{property}/documents/{document}', [AdminPropertyDocumentController::class, 'destroy'])->name('properties.documents.destroy');
     });
 });

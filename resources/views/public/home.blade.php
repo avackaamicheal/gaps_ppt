@@ -25,10 +25,10 @@
             </p>
 
             <div class="flex flex-wrap items-center gap-4">
-                <a href="#featured" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
-                    Browse Property Showcase
+                <a href="{{ route('properties.index') }}" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
+                    Browse Verified Properties
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </a>
                 <a href="https://wa.me/2348000000000?text=Hello%20Victor,%20I%20would%20like%20to%20consult%20on%20available%20properties" target="_blank" rel="noopener noreferrer" class="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-semibold text-base transition-all flex items-center gap-2">
@@ -58,102 +58,118 @@
     </div>
 </section>
 
-<!-- Property Showcase / Introductory Section (Phase 1 Shell) -->
+<!-- Category Quick Filter Navigation -->
+<section class="py-12 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-slate-900">Explore by Category</h2>
+            <a href="{{ route('properties.index') }}" class="text-xs font-bold text-emerald-600 hover:text-emerald-700">
+                View All Categories &rarr;
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @foreach ($categories as $cat)
+                <a href="{{ route('properties.index', ['category' => $cat->slug]) }}"
+                   class="p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all group">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-md text-2xs font-extrabold uppercase {{ $cat->slug === 'land' ? 'bg-teal-100 text-teal-800' : 'bg-emerald-100 text-emerald-800' }}">
+                            {{ $cat->name }}
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-400 group-hover:text-emerald-600">
+                            {{ $cat->properties_count }} Available
+                        </span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                        Verified {{ $cat->name }} Listings
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">
+                        {{ $cat->description }}
+                    </p>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<!-- Dynamic Property Showcase Section -->
 <section id="featured" class="py-20 bg-slate-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
-                <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest">Inventory Focus</span>
-                <h2 class="text-3xl font-bold text-slate-900 mt-1">Land & Building Portfolio</h2>
+                <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest">Selected Inventory</span>
+                <h2 class="text-3xl font-bold text-slate-900 mt-1">Featured Properties & Land</h2>
                 <p class="text-sm text-slate-500 mt-2 max-w-xl">
-                    Discover prime opportunities currently in preparation. Full dynamic listings and location filters will be populated in Phase 2.
+                    Hand-picked opportunities vetted for authentic documentation, immediate possession, and high capital growth.
                 </p>
             </div>
             <div class="mt-4 md:mt-0">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                    Phase 1 Initial Showcase
-                </span>
+                <a href="{{ route('properties.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold transition-colors">
+                    Explore Full Inventory &rarr;
+                </a>
             </div>
         </div>
 
-        <!-- Category Showcase Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Land Card Placeholder -->
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-tr from-emerald-800 to-teal-700 flex items-center justify-center text-white relative">
-                    <span class="absolute top-4 left-4 bg-emerald-950/80 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-md">
-                        Category: Land
-                    </span>
-                    <div class="text-center p-6">
-                        <svg class="w-12 h-12 mx-auto mb-2 text-emerald-300 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                        </svg>
-                        <span class="text-lg font-bold">Residential & Commercial Plots</span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Verified Plots & Acreages</h3>
-                    <p class="text-sm text-slate-500 mt-2 leading-relaxed">
-                        Excision, Gazette, Certificate of Occupancy, and Governor's Consent land parcels across Ibeju-Lekki, Epe, and Abuja growth corridors.
-                    </p>
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span>Includes Survey & Title Check</span>
-                        <a href="https://wa.me/2348000000000?text=I%20am%20enquiring%20about%20land%20listings" target="_blank" class="text-emerald-600 font-semibold hover:text-emerald-700">Enquire Now &rarr;</a>
-                    </div>
-                </div>
+        @if ($featuredProperties->isEmpty())
+            <div class="p-12 text-center bg-white rounded-3xl border border-slate-200">
+                <p class="text-sm text-slate-500">New verified properties are currently in preparation. Check back shortly!</p>
             </div>
+        @else
+            <!-- Dynamic Grid of Properties -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach ($featuredProperties as $prop)
+                    <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all flex flex-col group">
+                        <a href="{{ route('properties.show', $prop->slug) }}" class="relative block h-56 bg-slate-900 overflow-hidden">
+                            @if ($prop->cover_url)
+                                <img src="{{ $prop->cover_url }}" alt="{{ $prop->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500 text-xs font-bold">
+                                    Photo Pending
+                                </div>
+                            @endif
 
-            <!-- Residential Buildings Card Placeholder -->
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-tr from-slate-800 to-slate-700 flex items-center justify-center text-white relative">
-                    <span class="absolute top-4 left-4 bg-slate-900/80 text-slate-200 text-xs font-bold px-2.5 py-1 rounded-md">
-                        Category: Buildings
-                    </span>
-                    <div class="text-center p-6">
-                        <svg class="w-12 h-12 mx-auto mb-2 text-slate-300 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        <span class="text-lg font-bold">Residential Homes & Duplexes</span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Modern Living & Estates</h3>
-                    <p class="text-sm text-slate-500 mt-2 leading-relaxed">
-                        Detached duplexes, terrace houses, and luxury apartments in secure gated communities in Lekki, Ikoyi, Ikeja GRA, and Guzape.
-                    </p>
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span>Quality Structural Inspection</span>
-                        <a href="https://wa.me/2348000000000?text=I%20am%20enquiring%20about%20residential%20buildings" target="_blank" class="text-emerald-600 font-semibold hover:text-emerald-700">Enquire Now &rarr;</a>
-                    </div>
-                </div>
-            </div>
+                            <div class="absolute top-3 left-3 flex gap-1.5">
+                                <span class="px-2.5 py-1 rounded-md text-2xs font-extrabold uppercase text-white {{ $prop->isLand() ? 'bg-teal-700' : 'bg-emerald-700' }}">
+                                    {{ $prop->category->name }}
+                                </span>
+                            </div>
 
-            <!-- Commercial Card Placeholder -->
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-tr from-cyan-900 to-blue-800 flex items-center justify-center text-white relative">
-                    <span class="absolute top-4 left-4 bg-cyan-950/80 text-cyan-200 text-xs font-bold px-2.5 py-1 rounded-md">
-                        Category: Commercial
-                    </span>
-                    <div class="text-center p-6">
-                        <svg class="w-12 h-12 mx-auto mb-2 text-cyan-300 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span class="text-lg font-bold">Office & Retail Spaces</span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Commercial Real Estate</h3>
-                    <p class="text-sm text-slate-500 mt-2 leading-relaxed">
-                        Strategic commercial land and commercial buildings along major business arteries with strong rental yields and capital appreciation.
-                    </p>
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span>High ROI Investment</span>
-                        <a href="https://wa.me/2348000000000?text=I%20am%20enquiring%20about%20commercial%20spaces" target="_blank" class="text-emerald-600 font-semibold hover:text-emerald-700">Enquire Now &rarr;</a>
-                    </div>
-                </div>
+                            <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded text-3xs font-mono font-bold bg-slate-950/80 text-slate-300">
+                                {{ $prop->reference }}
+                            </span>
+                        </a>
+
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 mb-1">
+                                    {{ $prop->neighbourhood }}, {{ $prop->state }}
+                                </p>
+                                <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
+                                    <a href="{{ route('properties.show', $prop->slug) }}">
+                                        {{ $prop->title }}
+                                    </a>
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-2 line-clamp-2">
+                                    {{ $prop->description }}
+                                </p>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="block text-3xs uppercase font-semibold text-slate-400">Asking Price</span>
+                                    <span class="text-base font-black text-slate-900 font-mono">
+                                        {{ $prop->formatted_price }}
+                                    </span>
+                                </div>
+                                <a href="{{ route('properties.show', $prop->slug) }}" class="text-xs font-bold text-emerald-600 hover:text-emerald-700">
+                                    View Details &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
             </div>
-        </div>
+        @endif
     </div>
 </section>
 

@@ -145,3 +145,4 @@ class AdminAuthTest extends TestCase
         $postResponse->assertStatus(404);
     }
 }
+

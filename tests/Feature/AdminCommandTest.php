@@ -63,3 +63,4 @@ class AdminCommandTest extends TestCase
         ->assertFailed();
     }
 }
+
