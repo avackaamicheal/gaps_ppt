@@ -125,3 +125,4 @@ class PropertyMediaAndDocumentSecurityTest extends TestCase
         $response->assertStatus(404);
     }
 }
+

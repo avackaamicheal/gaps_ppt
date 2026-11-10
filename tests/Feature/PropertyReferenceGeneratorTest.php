@@ -82,3 +82,4 @@ class PropertyReferenceGeneratorTest extends TestCase
         $this->assertEquals('LAND-0002', $nextRef);
     }
 }
+

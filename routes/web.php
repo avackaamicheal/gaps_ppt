@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\EnquiryController as AdminEnquiryController;
+use App\Http\Controllers\Admin\InspectionController as AdminInspectionController;
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyDocumentController as AdminPropertyDocumentController;
+use App\Http\Controllers\Public\EnquiryController as PublicEnquiryController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PropertyController as PublicPropertyController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +17,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/properties', [PublicPropertyController::class, 'index'])->name('properties.index');
 Route::get('/properties/{slug}', [PublicPropertyController::class, 'show'])->name('properties.show');
 Route::get('/properties/{slug}/documents/{document}', [PublicPropertyController::class, 'downloadDocument'])->name('properties.documents.download');
+Route::post('/enquiries', [PublicEnquiryController::class, 'store'])->name('enquiries.store');
 
 // Admin Guest Routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -38,5 +43,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Property Documents Management
         Route::get('properties/{property}/documents/{document}/download', [AdminPropertyDocumentController::class, 'download'])->name('properties.documents.download');
         Route::delete('properties/{property}/documents/{document}', [AdminPropertyDocumentController::class, 'destroy'])->name('properties.documents.destroy');
+
+        // Phase 3: Enquiries Management & Offline Leads
+        Route::resource('enquiries', AdminEnquiryController::class)->except(['edit']);
+
+        // Phase 3: Customer Relationship Management (CRM)
+        Route::resource('customers', AdminCustomerController::class);
+
+        // Phase 3: Physical Site Inspections Scheduling
+        Route::resource('inspections', AdminInspectionController::class);
     });
 });

@@ -40,6 +40,71 @@
              if (this.documents.length > 1) {
                  this.documents.splice(index, 1);
              }
+         },
+         imagePreviews: [],
+         coverIndex: 0,
+         isDragging: false,
+         get totalPhotoSize() {
+             if (!this.imagePreviews.length) return '0 MB';
+             const totalBytes = this.imagePreviews.reduce((acc, curr) => acc + (curr.file?.size || 0), 0);
+             return (totalBytes / (1024 * 1024)).toFixed(1) + ' MB';
+         },
+         get coverPhoto() {
+             return this.imagePreviews[this.coverIndex] || this.imagePreviews[0] || null;
+         },
+         addFiles(files) {
+             const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+             if (!validFiles.length) return;
+
+             validFiles.forEach((file) => {
+                 this.imagePreviews.push({
+                     id: Math.random().toString(36).substr(2, 9),
+                     name: file.name,
+                     size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                     url: URL.createObjectURL(file),
+                     file: file
+                 });
+             });
+             this.syncFileInput();
+         },
+         handleImageSelection(event) {
+             this.addFiles(event.target.files);
+         },
+         handleDrop(event) {
+             this.isDragging = false;
+             if (event.dataTransfer && event.dataTransfer.files) {
+                 this.addFiles(event.dataTransfer.files);
+             }
+         },
+         removeImage(index) {
+             if (this.imagePreviews[index]?.url) {
+                 URL.revokeObjectURL(this.imagePreviews[index].url);
+             }
+             this.imagePreviews.splice(index, 1);
+             if (this.coverIndex >= this.imagePreviews.length) {
+                 this.coverIndex = Math.max(0, this.imagePreviews.length - 1);
+             }
+             this.syncFileInput();
+         },
+         clearAllImages() {
+             this.imagePreviews.forEach(item => {
+                 if (item.url) URL.revokeObjectURL(item.url);
+             });
+             this.imagePreviews = [];
+             this.coverIndex = 0;
+             this.syncFileInput();
+         },
+         setCover(index) {
+             this.coverIndex = index;
+         },
+         syncFileInput() {
+             if (window.DataTransfer && this.$refs.fileInput) {
+                 const dt = new DataTransfer();
+                 this.imagePreviews.forEach(item => {
+                     if (item.file) dt.items.add(item.file);
+                 });
+                 this.$refs.fileInput.files = dt.files;
+             }
          }
      }">
 
@@ -397,19 +462,185 @@
             </div>
         </div>
 
-        <!-- 4. Media: Property Images -->
-        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider pb-3 border-b border-slate-800 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                4. Property Images & Photography
-            </h3>
+        <!-- 4. Media: Property Images & Photography -->
+        <div class="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 shadow-xl">
+            <!-- Header with Status Pill -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-800 gap-3">
+                <div>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20"></span>
+                        4. Property Photography & Visuals
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        High-resolution visual assets. The designated cover photo will be the primary visual across search results and listing cards.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2" x-show="imagePreviews.length > 0">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 border border-emerald-800/80 text-emerald-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span x-text="imagePreviews.length + ' photo' + (imagePreviews.length > 1 ? 's' : '')"></span>
+                        <span class="text-emerald-600">•</span>
+                        <span x-text="totalPhotoSize"></span>
+                    </span>
+                    <button type="button" @click="clearAllImages()"
+                            class="text-xs text-slate-400 hover:text-rose-400 transition-colors px-2.5 py-1 rounded-lg hover:bg-slate-800/60 cursor-pointer">
+                        Clear all
+                    </button>
+                </div>
+            </div>
 
-            <p class="text-xs text-slate-400">
-                Upload one or multiple photos (JPG, PNG, WebP up to 5MB each). The first photo will serve as the cover image by default.
-            </p>
+            <!-- Hidden input for backend cover_index -->
+            <input type="hidden" name="cover_index" :value="coverIndex">
 
-            <div class="p-6 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-950/60 text-center hover:border-emerald-500 transition-colors">
-                <input type="file" name="images[]" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+            <!-- Hidden file input for pristine styling -->
+            <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" x-ref="fileInput" @change="handleImageSelection($event)" class="hidden">
+
+            <!-- Modern Interactive Dropzone -->
+            <div @click="$refs.fileInput.click()"
+                 @dragover.prevent="isDragging = true"
+                 @dragleave.prevent="isDragging = false"
+                 @drop.prevent="handleDrop($event)"
+                 class="relative group rounded-2xl border-2 border-dashed transition-all duration-200 p-8 sm:p-10 text-center cursor-pointer flex flex-col items-center justify-center gap-3"
+                 :class="isDragging ? 'border-emerald-400 bg-emerald-950/20 shadow-lg shadow-emerald-950/50' : 'border-slate-700/80 hover:border-emerald-500/60 bg-slate-950/40 hover:bg-slate-950/70'">
+
+                <!-- Glowing Icon -->
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 group-hover:scale-105 group-hover:border-emerald-500/50 transition-all shadow-md">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v16m8-8H4" />
+                        </svg>
+                </div>
+
+                <div class="space-y-1">
+                    <p class="text-sm font-semibold text-white">
+                        <span class="text-emerald-400 group-hover:underline underline-offset-4">Click to browse</span> or drag and drop photos here
+                    </p>
+                    <p class="text-xs text-slate-400">
+                        Supports high-resolution JPG, PNG, and WebP (up to 5MB each)
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1 text-2xs text-slate-500">
+                    <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">16:9 Landscape Ideal</span>
+                    <span>•</span>
+                    <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">Multiple selection supported</span>
+                </div>
+            </div>
+
+            <!-- Previews Workspace (Rendered if images are selected) -->
+            <div x-show="imagePreviews.length > 0" x-cloak class="space-y-6 pt-2">
+                <!-- Cover Photo Spotlight -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-emerald-500/40 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-extrabold uppercase tracking-wider bg-emerald-500 text-slate-950 shadow-sm">
+                                <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Primary Cover Photo
+                            </span>
+                            <span class="text-2xs text-slate-400">Featured visual shown on homepage & search cards</span>
+                        </div>
+                        <button type="button" @click="$refs.fileInput.click()" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer">
+                            + Add more photos
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                        <div class="md:col-span-7 lg:col-span-8 rounded-xl overflow-hidden aspect-16/9 bg-slate-900 border border-slate-800 relative shadow-inner">
+                            <template x-if="coverPhoto">
+                                <img :src="coverPhoto.url" :alt="coverPhoto.name" class="w-full h-full object-cover">
+                            </template>
+                        </div>
+                        <div class="md:col-span-5 lg:col-span-4 space-y-3">
+                            <div>
+                                <span class="text-2xs uppercase tracking-wider text-slate-500 font-bold block mb-1">Selected Cover Image</span>
+                                <p class="text-sm font-bold text-white truncate" x-text="coverPhoto ? coverPhoto.name : ''"></p>
+                                <p class="text-xs text-slate-400 font-mono mt-0.5" x-text="coverPhoto ? coverPhoto.size : ''"></p>
+                            </div>
+
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                To choose a different cover photo, click the <strong class="text-emerald-400">"★ Set as Cover"</strong> button on any photo in the gallery below.
+                            </p>
+
+                            <div class="pt-2">
+                                <button type="button" @click="removeImage(coverIndex)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/60 border border-rose-800/80 text-rose-300 text-xs font-semibold transition-colors cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Remove this photo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Grid of All Photos -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">
+                            All Uploaded Photos (<span x-text="imagePreviews.length"></span>)
+                        </span>
+                        <span class="text-2xs text-slate-500">
+                            Hover over any image to set as cover or remove
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <template x-for="(item, idx) in imagePreviews" :key="item.id">
+                            <div class="relative group rounded-xl overflow-hidden bg-slate-950 border transition-all duration-200 shadow-md flex flex-col"
+                                 :class="coverIndex === idx ? 'border-emerald-500 ring-2 ring-emerald-500/40 shadow-emerald-950/50' : 'border-slate-800 hover:border-slate-600'">
+
+                                <!-- Photo Frame (16:9 Aspect Ratio) -->
+                                <div class="aspect-16/9 w-full bg-slate-900 relative overflow-hidden">
+                                    <img :src="item.url" :alt="item.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+
+                                    <!-- Index Chip -->
+                                    <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-3xs font-mono font-bold bg-slate-950/80 backdrop-blur-xs text-slate-300 border border-slate-800">
+                                        #<span x-text="idx + 1"></span>
+                                    </span>
+
+                                    <!-- Cover Indicator -->
+                                    <span x-show="coverIndex === idx"
+                                          class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-500 text-slate-950 shadow">
+                                        ★ Cover
+                                    </span>
+
+                                    <!-- Hover Glassmorphism Overlay with Quick Actions -->
+                                    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-2">
+                                        <button type="button"
+                                                x-show="coverIndex !== idx"
+                                                @click="setCover(idx)"
+                                                title="Set as primary cover photo"
+                                                class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-2xs font-bold shadow-md transition-all flex items-center gap-1 cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            Set Cover
+                                        </button>
+
+                                        <button type="button"
+                                                @click="removeImage(idx)"
+                                                title="Delete photo"
+                                                class="w-8 h-8 rounded-lg bg-rose-950/80 hover:bg-rose-600 border border-rose-800/80 text-rose-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-md">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Metadata Footer -->
+                                <div class="p-2.5 bg-slate-950/90 border-t border-slate-900 flex items-center justify-between text-2xs">
+                                    <span class="text-white font-medium truncate max-w-[120px]" :title="item.name" x-text="item.name"></span>
+                                    <span class="text-slate-400 font-mono text-3xs shrink-0" x-text="item.size"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -492,3 +723,4 @@
 
 </div>
 @endsection
+

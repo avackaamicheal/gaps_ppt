@@ -40,3 +40,4 @@ class PropertyImage extends Model
         return Storage::disk('public')->url($this->file_path);
     }
 }
+

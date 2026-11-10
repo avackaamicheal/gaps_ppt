@@ -327,6 +327,97 @@
                     </div>
                 </div>
 
+                <!-- Online Enquiry Form Card -->
+                <div id="enquire" class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">Send Direct Website Enquiry</h3>
+                            <p class="text-2xs text-slate-500 mt-0.5">Get a prompt personal response from Victor</p>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    </div>
+
+                    @if (session('enquiry_success'))
+                        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <p>{{ session('enquiry_success') }}</p>
+                        </div>
+                    @endif
+
+                    @if ($errors->has('enquiry_throttle'))
+                        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                            {{ $errors->first('enquiry_throttle') }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('enquiries.store') }}" class="space-y-3.5">
+                        @csrf
+                        <input type="hidden" name="property_id" value="{{ $property->id }}">
+
+                        <!-- Honeypot anti-spam bot trap -->
+                        <div class="hidden" aria-hidden="true">
+                            <input type="text" name="bot_check" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <div>
+                            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                Full Name <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" name="name" value="{{ old('name') }}" required
+                                   placeholder="e.g. Chief Babatunde Adeleke"
+                                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-emerald-600 transition-colors">
+                            @error('name')
+                                <p class="text-3xs text-rose-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                Phone Number <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" value="{{ old('phone') }}" required
+                                   placeholder="e.g. 0803 123 4567 or +234..."
+                                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-emerald-600 transition-colors">
+                            @error('phone')
+                                <p class="text-3xs text-rose-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                Email Address <span class="text-slate-400 font-normal">(Optional)</span>
+                            </label>
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                   placeholder="e.g. name@example.com"
+                                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-emerald-600 transition-colors">
+                            @error('email')
+                                <p class="text-3xs text-rose-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                Your Message or Inquiry <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea name="message" rows="3" required
+                                      class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-emerald-600 transition-colors">{{ old('message', "I am interested in property [{$property->reference}] - {$property->title}. Please provide more information and let me know available inspection dates.") }}</textarea>
+                            @error('message')
+                                <p class="text-3xs text-rose-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button type="submit"
+                                class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                            Submit Enquiry
+                        </button>
+                    </form>
+                </div>
+
                 <!-- Inspection Notice -->
                 <div class="bg-emerald-950/90 text-white rounded-3xl p-6 border border-emerald-800/80 shadow-md">
                     <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
@@ -380,3 +471,4 @@
     </div>
 </div>
 @endsection
+

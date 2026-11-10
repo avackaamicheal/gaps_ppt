@@ -38,3 +38,4 @@ class PropertyCategorySeeder extends Seeder
         }
     }
 }
+

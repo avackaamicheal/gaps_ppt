@@ -86,3 +86,4 @@ return [
         'Automated Gate / Smart Home',
     ],
 ];
+

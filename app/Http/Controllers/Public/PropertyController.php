@@ -88,3 +88,4 @@ class PropertyController extends Controller
         return Storage::disk('local')->download($document->file_path, $document->file_name);
     }
 }
+

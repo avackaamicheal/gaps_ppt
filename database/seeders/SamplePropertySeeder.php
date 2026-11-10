@@ -136,3 +136,4 @@ class SamplePropertySeeder extends Seeder
         }
     }
 }
+

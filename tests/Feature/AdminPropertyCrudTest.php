@@ -158,6 +158,40 @@ class AdminPropertyCrudTest extends TestCase
         Storage::disk('local')->assertExists($document->file_path);
     }
 
+    public function test_admin_can_designate_specific_cover_image_by_index(): void
+    {
+        Storage::fake('public');
+
+        $img1 = UploadedFile::fake()->image('photo1.jpg');
+        $img2 = UploadedFile::fake()->image('photo2.jpg');
+        $img3 = UploadedFile::fake()->image('photo3.jpg');
+
+        $payload = [
+            'category_id' => $this->landCategory->id,
+            'title' => 'Plot with Multiple Images Test',
+            'description' => 'Testing specific cover index designation.',
+            'price' => 15000000,
+            'status' => Property::STATUS_DRAFT,
+            'state' => 'Lagos',
+            'lga' => 'Epe',
+            'neighbourhood' => 'Epe Town',
+            'images' => [$img1, $img2, $img3],
+            'cover_index' => 1, // Second image is designated cover
+        ];
+
+        $response = $this->actingAs($this->admin)->post('/admin/properties', $payload);
+        $response->assertRedirect('/admin/properties');
+
+        $property = Property::where('title', 'Plot with Multiple Images Test')->first();
+        $this->assertNotNull($property);
+        $this->assertEquals(3, $property->images()->count());
+
+        $images = $property->images()->orderBy('sort_order')->get();
+        $this->assertFalse($images[0]->is_cover);
+        $this->assertTrue($images[1]->is_cover);
+        $this->assertFalse($images[2]->is_cover);
+    }
+
     public function test_admin_can_create_building_property(): void
     {
         $payload = [
@@ -273,3 +307,4 @@ class AdminPropertyCrudTest extends TestCase
         Storage::disk('local')->assertMissing($docPath);
     }
 }
+

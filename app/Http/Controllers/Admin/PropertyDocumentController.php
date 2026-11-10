@@ -40,3 +40,4 @@ class PropertyDocumentController extends Controller
         return back()->with('status', 'Property document removed successfully.');
     }
 }
+

@@ -22,3 +22,4 @@ class PropertyCategoryFactory extends Factory
         ];
     }
 }
+

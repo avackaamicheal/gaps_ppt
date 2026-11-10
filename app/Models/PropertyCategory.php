@@ -25,3 +25,4 @@ class PropertyCategory extends Model
         return $this->hasMany(Property::class, 'category_id');
     }
 }
+

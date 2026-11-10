@@ -36,6 +36,60 @@
          },
          removeNewDocument(index) {
              this.newDocuments.splice(index, 1);
+         },
+         newImagePreviews: [],
+         isDraggingNew: false,
+         get totalNewPhotoSize() {
+             if (!this.newImagePreviews.length) return '0 MB';
+             const totalBytes = this.newImagePreviews.reduce((acc, curr) => acc + (curr.file?.size || 0), 0);
+             return (totalBytes / (1024 * 1024)).toFixed(1) + ' MB';
+         },
+         addNewFiles(files) {
+             const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+             if (!validFiles.length) return;
+
+             validFiles.forEach((file) => {
+                 this.newImagePreviews.push({
+                     id: Math.random().toString(36).substr(2, 9),
+                     name: file.name,
+                     size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                     url: URL.createObjectURL(file),
+                     file: file
+                 });
+             });
+             this.syncNewFileInput();
+         },
+         handleNewImageSelection(event) {
+             this.addNewFiles(event.target.files);
+         },
+         handleNewDrop(event) {
+             this.isDraggingNew = false;
+             if (event.dataTransfer && event.dataTransfer.files) {
+                 this.addNewFiles(event.dataTransfer.files);
+             }
+         },
+         removeNewImage(index) {
+             if (this.newImagePreviews[index]?.url) {
+                 URL.revokeObjectURL(this.newImagePreviews[index].url);
+             }
+             this.newImagePreviews.splice(index, 1);
+             this.syncNewFileInput();
+         },
+         clearAllNewImages() {
+             this.newImagePreviews.forEach(item => {
+                 if (item.url) URL.revokeObjectURL(item.url);
+             });
+             this.newImagePreviews = [];
+             this.syncNewFileInput();
+         },
+         syncNewFileInput() {
+             if (window.DataTransfer && this.$refs.newFileInput) {
+                 const dt = new DataTransfer();
+                 this.newImagePreviews.forEach(item => {
+                     if (item.file) dt.items.add(item.file);
+                 });
+                 this.$refs.newFileInput.files = dt.files;
+             }
          }
      }">
 
@@ -365,45 +419,132 @@
         </div>
 
         <!-- 4. Manage Existing & New Images -->
-        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider pb-3 border-b border-slate-800 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                4. Property Images ({{ $property->images->count() }} attached)
-            </h3>
+        <div class="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-800 gap-3">
+                <div>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20"></span>
+                        4. Property Photography & Media ({{ $property->images->count() }} attached)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Manage existing gallery photos, switch the primary cover photo, or upload additional high-resolution images.
+                    </p>
+                </div>
+            </div>
 
+            <!-- Existing Attached Photos -->
             @if ($property->images->isNotEmpty())
-                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                    @foreach ($property->images as $img)
-                        <div class="relative rounded-xl overflow-hidden border {{ $img->is_cover ? 'border-emerald-500 ring-2 ring-emerald-500/50' : 'border-slate-800' }} bg-slate-950 group">
-                            <img src="{{ $img->url }}" class="w-full h-24 object-cover">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">
+                            Current Photos in Listing
+                        </span>
+                        <span class="text-2xs text-slate-400">Select cover radio or check delete box</span>
+                    </div>
 
-                            <div class="p-2 space-y-1.5 text-2xs bg-slate-950">
-                                <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer">
-                                    <input type="radio" name="cover_image_id" value="{{ $img->id }}" {{ $img->is_cover ? 'checked' : '' }}
-                                           class="text-emerald-600 focus:ring-emerald-500">
-                                    <span>Cover</span>
-                                </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        @foreach ($property->images as $img)
+                            <div class="relative rounded-xl overflow-hidden bg-slate-950 border transition-all duration-200 shadow-md flex flex-col {{ $img->is_cover ? 'border-emerald-500 ring-2 ring-emerald-500/40 shadow-emerald-950/50' : 'border-slate-800' }}">
+                                <div class="aspect-16/9 w-full bg-slate-900 relative overflow-hidden">
+                                    <img src="{{ $img->url }}" class="w-full h-full object-cover">
 
-                                <label class="flex items-center gap-1.5 text-rose-400 cursor-pointer">
-                                    <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" class="text-rose-600">
-                                    <span>Delete</span>
-                                </label>
+                                    @if ($img->is_cover)
+                                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-500 text-slate-950 shadow">
+                                            ★ Cover
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div class="p-2.5 bg-slate-950/90 border-t border-slate-900 flex items-center justify-between text-2xs">
+                                    <label class="flex items-center gap-1.5 text-slate-200 hover:text-white cursor-pointer select-none">
+                                        <input type="radio" name="cover_image_id" value="{{ $img->id }}" {{ $img->is_cover ? 'checked' : '' }}
+                                               class="rounded-full text-emerald-600 focus:ring-emerald-500 bg-slate-900 border-slate-700">
+                                        <span class="font-medium {{ $img->is_cover ? 'text-emerald-400 font-bold' : '' }}">Cover</span>
+                                    </label>
+
+                                    <label class="flex items-center gap-1.5 text-rose-400 hover:text-rose-300 cursor-pointer select-none">
+                                        <input type="checkbox" name="delete_images[]" value="{{ $img->id }}"
+                                               class="rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500">
+                                        <span class="text-3xs font-semibold">Delete</span>
+                                    </label>
+                                </div>
                             </div>
-
-                            @if ($img->is_cover)
-                                <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-3xs font-extrabold bg-emerald-600 text-white">
-                                    COVER
-                                </span>
-                            @endif
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
-            <div class="pt-2">
-                <label class="block text-xs font-semibold text-slate-300 mb-2">Upload Additional Images</label>
-                <div class="p-4 rounded-xl border border-dashed border-slate-700 bg-slate-950/60 text-center">
-                    <input type="file" name="images[]" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white cursor-pointer">
+            <!-- Additional Images Upload Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Upload Additional Images</span>
+                        <p class="text-2xs text-slate-400 mt-0.5">Newly uploaded photos will be appended to the property gallery.</p>
+                    </div>
+                    <div class="flex items-center gap-2" x-show="newImagePreviews.length > 0">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 border border-emerald-800/80 text-emerald-400">
+                            <span x-text="newImagePreviews.length + ' new photo' + (newImagePreviews.length > 1 ? 's' : '')"></span>
+                            <span class="text-emerald-600">•</span>
+                            <span x-text="totalNewPhotoSize"></span>
+                        </span>
+                        <button type="button" @click="clearAllNewImages()"
+                                class="text-xs text-slate-400 hover:text-rose-400 transition-colors px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden file input -->
+                <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" x-ref="newFileInput" @change="handleNewImageSelection($event)" class="hidden">
+
+                <!-- Modern Interactive Dropzone -->
+                <div @click="$refs.newFileInput.click()"
+                     @dragover.prevent="isDraggingNew = true"
+                     @dragleave.prevent="isDraggingNew = false"
+                     @drop.prevent="handleNewDrop($event)"
+                     class="relative group rounded-2xl border-2 border-dashed transition-all duration-200 p-6 sm:p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-2.5"
+                     :class="isDraggingNew ? 'border-emerald-400 bg-emerald-950/20 shadow-lg shadow-emerald-950/50' : 'border-slate-700/80 hover:border-emerald-500/60 bg-slate-950/40 hover:bg-slate-950/70'">
+
+                    <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-emerald-400 group-hover:scale-105 group-hover:border-emerald-500/50 transition-all shadow-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p class="text-xs sm:text-sm font-semibold text-white">
+                            <span class="text-emerald-400 group-hover:underline underline-offset-4">Click to select new photos</span> or drag and drop here
+                        </p>
+                        <p class="text-2xs text-slate-400 mt-0.5">JPG, PNG, WebP up to 5MB each</p>
+                    </div>
+                </div>
+
+                <!-- New Previews Grid -->
+                <div x-show="newImagePreviews.length > 0" x-cloak class="space-y-3 pt-2">
+                    <span class="text-xs font-semibold text-slate-300">Ready to Upload upon Saving:</span>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <template x-for="(item, idx) in newImagePreviews" :key="item.id">
+                            <div class="relative group rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md flex flex-col">
+                                <div class="aspect-16/9 w-full bg-slate-900 relative overflow-hidden">
+                                    <img :src="item.url" :alt="item.name" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button type="button" @click="removeNewImage(idx)"
+                                                title="Remove photo"
+                                                class="w-8 h-8 rounded-lg bg-rose-950/80 hover:bg-rose-600 border border-rose-800 text-rose-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-2 bg-slate-950/90 border-t border-slate-900 flex items-center justify-between text-2xs">
+                                    <span class="text-white truncate max-w-[120px]" :title="item.name" x-text="item.name"></span>
+                                    <span class="text-slate-400 font-mono text-3xs" x-text="item.size"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -501,3 +642,4 @@
 
 </div>
 @endsection
+

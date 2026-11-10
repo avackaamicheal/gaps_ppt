@@ -52,3 +52,4 @@ class PropertyDocument extends Model
         return $bytes . ' B';
     }
 }
+

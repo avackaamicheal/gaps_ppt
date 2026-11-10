@@ -21,3 +21,4 @@ class PropertyImageFactory extends Factory
         ];
     }
 }
+

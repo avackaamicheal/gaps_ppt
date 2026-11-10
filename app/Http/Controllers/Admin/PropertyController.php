@@ -337,3 +337,4 @@ class PropertyController extends Controller
         return redirect()->route('admin.properties.index')->with('status', "Property '{$property->reference}' deleted successfully.");
     }
 }
+

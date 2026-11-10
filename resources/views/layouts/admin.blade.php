@@ -62,32 +62,53 @@
                     <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
                 </a>
 
-                <!-- 3. Enquiries (Phase 3) -->
-                <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">
-                    <svg class="w-5 h-5 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- 3. Enquiries (Active in Phase 3) -->
+                @php
+                    $navNewEnquiriesCount = \App\Models\Enquiry::where('status', \App\Models\Enquiry::STATUS_NEW)->count();
+                @endphp
+                <a href="{{ route('admin.enquiries.index') }}"
+                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-colors {{ request()->routeIs('admin.enquiries.*') ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                     <span>Enquiries</span>
-                    <span class="ml-auto text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Phase 3</span>
-                </div>
+                    @if ($navNewEnquiriesCount > 0)
+                        <span class="ml-auto text-2xs font-extrabold px-2 py-0.5 rounded-full bg-rose-500 text-white animate-pulse">
+                            {{ $navNewEnquiriesCount }} new
+                        </span>
+                    @else
+                        <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
+                    @endif
+                </a>
 
-                <!-- 4. Customers (Phase 3) -->
-                <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">
-                    <svg class="w-5 h-5 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- 4. Customers (Active in Phase 3) -->
+                <a href="{{ route('admin.customers.index') }}"
+                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-colors {{ request()->routeIs('admin.customers.*') ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>Customers</span>
-                    <span class="ml-auto text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Phase 3</span>
-                </div>
+                    <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
+                </a>
 
-                <!-- 5. Inspections (Phase 3) -->
-                <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">
-                    <svg class="w-5 h-5 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- 5. Inspections (Active in Phase 3) -->
+                @php
+                    $navUpcomingCount = \App\Models\Inspection::upcoming()->count();
+                @endphp
+                <a href="{{ route('admin.inspections.index') }}"
+                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-colors {{ request()->routeIs('admin.inspections.*') ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>Inspections</span>
-                    <span class="ml-auto text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Phase 3</span>
-                </div>
+                    @if ($navUpcomingCount > 0)
+                        <span class="ml-auto text-2xs font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            {{ $navUpcomingCount }}
+                        </span>
+                    @else
+                        <span class="ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400">Live</span>
+                    @endif
+                </a>
 
                 <!-- 6. Documents (Phase 2) -->
                 <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 cursor-not-allowed select-none group">

@@ -203,3 +203,4 @@ class PublicPropertyDiscoveryTest extends TestCase
         $response->assertSeeText($draftProperty->title);
     }
 }
+

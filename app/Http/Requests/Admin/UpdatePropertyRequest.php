@@ -75,3 +75,4 @@ class UpdatePropertyRequest extends FormRequest
         ];
     }
 }
+

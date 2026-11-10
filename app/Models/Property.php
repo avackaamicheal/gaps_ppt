@@ -233,4 +233,21 @@ class Property extends Model
     {
         return !$this->isLand();
     }
+
+    /**
+     * Enquiries received for this property.
+     */
+    public function enquiries(): HasMany
+    {
+        return $this->hasMany(Enquiry::class)->latest();
+    }
+
+    /**
+     * Physical site inspections scheduled for this property.
+     */
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(Inspection::class)->latest('scheduled_date');
+    }
 }
+
