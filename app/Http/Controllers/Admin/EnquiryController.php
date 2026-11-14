@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreManualLeadRequest;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Property;
+use App\Services\ActivityLogger;
 use App\Services\CustomerManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,6 +82,12 @@ class EnquiryController extends Controller
             'internal_notes' => $request->validated('internal_notes'),
         ]);
 
+        ActivityLogger::log(
+            'lead.created',
+            "Recorded manual lead from {$enquiry->name} ({$enquiry->phone})",
+            $enquiry
+        );
+
         return redirect()->route('admin.enquiries.show', $enquiry)
             ->with('status', 'Lead recorded and customer profile updated successfully.');
     }
@@ -105,7 +112,15 @@ class EnquiryController extends Controller
             'internal_notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
+        $oldStatus = $enquiry->status;
         $enquiry->update($validated);
+
+        ActivityLogger::log(
+            'lead.status_updated',
+            "Updated lead #{$enquiry->id} status to " . (Enquiry::STATUSES[$validated['status']] ?? $validated['status']),
+            $enquiry,
+            ['old_status' => $oldStatus, 'new_status' => $validated['status']]
+        );
 
         return back()->with('status', 'Enquiry status and notes updated.');
     }
@@ -115,6 +130,14 @@ class EnquiryController extends Controller
      */
     public function destroy(Enquiry $enquiry): RedirectResponse
     {
+        $name = $enquiry->name;
+        $id = $enquiry->id;
+
+        ActivityLogger::log(
+            'lead.deleted',
+            "Deleted enquiry #{$id} from {$name}"
+        );
+
         $enquiry->delete();
 
         return redirect()->route('admin.enquiries.index')

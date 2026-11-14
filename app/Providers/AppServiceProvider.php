@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+require_once app_path('helpers.php');
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

@@ -1,6 +1,9 @@
 @extends('layouts.public')
 
 @section('title', $property->title . ' (' . $property->reference . ')')
+@section('meta_description', \Illuminate\Support\Str::limit(strip_tags($property->description), 160))
+@section('og_image', $property->cover_url ?: asset('images/og-default.jpg'))
+@section('og_type', 'article')
 
 @section('content')
 <div class="bg-slate-50 py-10"
@@ -294,8 +297,10 @@
                     <!-- Direct Contact CTAs -->
                     <div class="space-y-3 pt-4 border-t border-slate-100">
                         @php
+                            $waNumber = preg_replace('/[^0-9]/', '', settings('whatsapp_number', '2348000000000'));
                             $waMessage = "Hello Victor, I am interested in property [{$property->reference}] - {$property->title}. Can we arrange an inspection?";
-                            $waUrl = "https://wa.me/2348000000000?text=" . urlencode($waMessage);
+                            $waUrl = "https://wa.me/{$waNumber}?text=" . urlencode($waMessage);
+                            $phoneUrl = 'tel:' . preg_replace('/[^\+0-9]/', '', settings('phone', '+234 800 000 0000'));
                         @endphp
 
                         <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer"
@@ -306,7 +311,7 @@
                             Enquire on WhatsApp
                         </a>
 
-                        <a href="tel:+2348000000000"
+                        <a href="{{ $phoneUrl }}"
                            class="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-center text-sm transition-all flex items-center justify-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -318,11 +323,11 @@
                     <!-- Agent Assurance -->
                     <div class="pt-6 border-t border-slate-100 flex items-center gap-3.5">
                         <div class="w-11 h-11 rounded-full bg-slate-900 text-white font-black flex items-center justify-center shrink-0">
-                            VA
+                            {{ strtoupper(substr(settings('agent_name', 'Victor Akande'), 0, 1)) }}
                         </div>
                         <div>
-                            <span class="block text-xs font-bold text-slate-900">Victor Akande</span>
-                            <span class="block text-2xs text-slate-500">Lead Independent Real Estate Advisor</span>
+                            <span class="block text-xs font-bold text-slate-900">{{ settings('agent_name', 'Victor Akande') }}</span>
+                            <span class="block text-2xs text-slate-500">{{ settings('agent_title', 'Lead Independent Real Estate Advisor') }}</span>
                         </div>
                     </div>
                 </div>

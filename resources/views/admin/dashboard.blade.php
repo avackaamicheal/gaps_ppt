@@ -297,6 +297,51 @@
 
     </div>
 
+    <!-- Recent Administrative Activity Feed (Phase 4) -->
+    <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-base font-bold text-white">Recent Administrative Activity</h3>
+                <p class="text-2xs text-slate-400">Real-time audit log of updates to properties, leads, inspections, and settings.</p>
+            </div>
+            <a href="{{ route('admin.activity-logs.index') }}" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">
+                View Full Audit Log &rarr;
+            </a>
+        </div>
+
+        @if ($recentActivity->isEmpty())
+            <div class="p-6 text-center text-xs text-slate-500">
+                No recent administrative activity recorded yet.
+            </div>
+        @else
+            <div class="divide-y divide-slate-800/60">
+                @foreach ($recentActivity as $act)
+                    <div class="py-3 flex items-center justify-between gap-4 text-xs">
+                        <div class="flex items-center gap-3 min-w-0">
+                            @php
+                                $actColor = match(explode('.', $act->action)[0] ?? '') {
+                                    'property' => 'bg-emerald-500/20 text-emerald-400',
+                                    'lead' => 'bg-sky-500/20 text-sky-400',
+                                    'inspection' => 'bg-amber-500/20 text-amber-400',
+                                    'testimonial' => 'bg-purple-500/20 text-purple-400',
+                                    'settings' => 'bg-teal-500/20 text-teal-400',
+                                    default => 'bg-slate-800 text-slate-300',
+                                };
+                            @endphp
+                            <span class="px-2 py-0.5 rounded text-3xs font-mono font-bold shrink-0 {{ $actColor }}">
+                                {{ $act->action }}
+                            </span>
+                            <span class="text-slate-200 truncate">{{ $act->description }}</span>
+                        </div>
+                        <span class="text-3xs font-mono text-slate-500 shrink-0">
+                            {{ $act->created_at->diffForHumans() }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
     <!-- Phased Rollout Roadmap -->
     <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800">
         <h3 class="text-base font-bold text-white mb-2">Development Roadmap Progress</h3>
@@ -333,13 +378,13 @@
             </div>
 
             <!-- Phase 4 -->
-            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div class="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-400">Phase 4</span>
-                    <span class="text-2xs font-extrabold px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-400">NEXT</span>
+                    <span class="text-xs font-bold text-emerald-400">Phase 4</span>
+                    <span class="text-2xs font-extrabold px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-300">COMPLETE</span>
                 </div>
-                <h4 class="text-sm font-semibold text-slate-200">Content & Launch</h4>
-                <p class="text-xs text-slate-500 mt-1">Testimonials, site settings, activity logs, SEO metadata, performance audits, and deployment.</p>
+                <h4 class="text-sm font-semibold text-white">Content & Launch</h4>
+                <p class="text-xs text-slate-400 mt-1">Testimonials, site settings, activity audit trail, dynamic sitemap, SEO metadata, and production deployment.</p>
             </div>
         </div>
     </div>

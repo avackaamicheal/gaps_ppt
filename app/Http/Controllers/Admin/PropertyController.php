@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Models\PropertyCategory;
 use App\Models\PropertyDocument;
 use App\Models\PropertyImage;
+use App\Services\ActivityLogger;
 use App\Services\PropertyReferenceGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -145,6 +146,12 @@ class PropertyController extends Controller
             }
         });
 
+        ActivityLogger::log(
+            'property.created',
+            "Created property listing '{$property->reference}' - {$property->title}",
+            $property
+        );
+
         return redirect()->route('admin.properties.index')->with('status', "Property '{$property->reference}' created successfully.");
     }
 
@@ -266,6 +273,12 @@ class PropertyController extends Controller
             }
         });
 
+        ActivityLogger::log(
+            'property.updated',
+            "Updated property listing '{$property->reference}'",
+            $property
+        );
+
         return redirect()->route('admin.properties.index')->with('status', "Property '{$property->reference}' updated successfully.");
     }
 
@@ -278,6 +291,7 @@ class PropertyController extends Controller
             'status' => ['required', 'string', Rule::in(array_keys(Property::STATUSES))],
         ]);
 
+        $oldStatus = $property->status;
         $status = $validated['status'];
         $publishedAt = ($status === Property::STATUS_PUBLISHED && !$property->published_at) ? now() : $property->published_at;
 
@@ -285,6 +299,13 @@ class PropertyController extends Controller
             'status' => $status,
             'published_at' => $publishedAt,
         ]);
+
+        ActivityLogger::log(
+            'property.status_updated',
+            "Changed status of '{$property->reference}' from " . (Property::STATUSES[$oldStatus] ?? $oldStatus) . " to " . Property::STATUSES[$status],
+            $property,
+            ['old_status' => $oldStatus, 'new_status' => $status]
+        );
 
         return back()->with('status', "Status for '{$property->reference}' changed to " . Property::STATUSES[$status] . ".");
     }
@@ -320,6 +341,8 @@ class PropertyController extends Controller
      */
     public function destroy(Property $property): RedirectResponse
     {
+        $reference = $property->reference;
+
         DB::transaction(function () use ($property) {
             // Delete image files
             foreach ($property->images as $image) {
@@ -334,7 +357,12 @@ class PropertyController extends Controller
             $property->delete();
         });
 
-        return redirect()->route('admin.properties.index')->with('status', "Property '{$property->reference}' deleted successfully.");
+        ActivityLogger::log(
+            'property.deleted',
+            "Deleted property listing '{$reference}'"
+        );
+
+        return redirect()->route('admin.properties.index')->with('status', "Property '{$reference}' deleted successfully.");
     }
 }
 

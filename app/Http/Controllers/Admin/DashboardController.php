@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Inspection;
@@ -43,11 +44,17 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $recentActivity = ActivityLog::with('user:id,name')
+            ->recent()
+            ->take(6)
+            ->get();
+
         return view('admin.dashboard', compact(
             'stats',
             'recentProperties',
             'recentEnquiries',
-            'upcomingInspections'
+            'upcomingInspections',
+            'recentActivity'
         ));
     }
 }

@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Models\PropertyCategory;
+use App\Models\Testimonial;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     /**
-     * Display the public homepage with dynamic featured properties.
+     * Display the public homepage with dynamic featured properties and client testimonials.
      */
     public function index(): View
     {
@@ -33,6 +34,11 @@ class HomeController extends Controller
             $query->published();
         }])->get();
 
-        return view('public.home', compact('featuredProperties', 'categories'));
+        $testimonials = Testimonial::published()
+            ->with('property:id,title,reference')
+            ->take(6)
+            ->get();
+
+        return view('public.home', compact('featuredProperties', 'categories', 'testimonials'));
     }
 }

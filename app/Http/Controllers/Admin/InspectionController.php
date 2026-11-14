@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Inspection;
 use App\Models\Property;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -103,6 +104,15 @@ class InspectionController extends Controller
             }
         }
 
+        $dateString = $inspection->scheduled_date ? $inspection->scheduled_date->format('M j, Y') : 'upcoming date';
+        $timeString = $inspection->scheduled_time ? " at {$inspection->scheduled_time}" : '';
+
+        ActivityLogger::log(
+            'inspection.scheduled',
+            "Scheduled site inspection for {$dateString}{$timeString}",
+            $inspection
+        );
+
         return redirect()->route('admin.inspections.show', $inspection)
             ->with('status', 'Site inspection scheduled successfully.');
     }
@@ -135,6 +145,12 @@ class InspectionController extends Controller
     {
         $inspection->update($request->validated());
 
+        ActivityLogger::log(
+            'inspection.updated',
+            "Updated inspection #{$inspection->id} (Status: " . (Inspection::STATUSES[$inspection->status] ?? $inspection->status) . ")",
+            $inspection
+        );
+
         return redirect()->route('admin.inspections.show', $inspection)
             ->with('status', 'Inspection appointment updated successfully.');
     }
@@ -144,6 +160,13 @@ class InspectionController extends Controller
      */
     public function destroy(Inspection $inspection): RedirectResponse
     {
+        $id = $inspection->id;
+
+        ActivityLogger::log(
+            'inspection.deleted',
+            "Removed inspection appointment #{$id}"
+        );
+
         $inspection->delete();
 
         return redirect()->route('admin.inspections.index')
